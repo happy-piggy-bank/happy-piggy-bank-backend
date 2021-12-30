@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { PiggyBank } from './entities/piggyBank.entity';
+import { User } from './entities/user.entity';
 
 @Module({
   imports: [
@@ -25,7 +27,7 @@ import { AppService } from './app.service';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [],
+      entities: [User, PiggyBank],
       synchronize: true,
       logging: true
     })
