@@ -20,9 +20,9 @@ export class User {
     @IsString()
     user_name: string;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, length: 300 })
     @IsString()
-    access_token: string;
+    auth_token: string;
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     @IsString()

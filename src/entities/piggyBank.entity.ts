@@ -12,7 +12,7 @@ export class PiggyBank {
     @IsString()
     bank_title: string;
 
-    @Column()
+    @Column({ type: 'text' })
     @IsString()
     bank_content: string;
 
