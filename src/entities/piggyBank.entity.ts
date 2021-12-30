@@ -1,11 +1,12 @@
 import { IsBoolean, IsNumber, IsString } from 'class-validator';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { User } from './user.entity';
 
 @Entity()
 export class PiggyBank {
     @PrimaryGeneratedColumn()
     @IsNumber()
-    bank_idx: number;
+    id: number;
 
     @Column()
     @IsString()
@@ -19,15 +20,10 @@ export class PiggyBank {
     @IsNumber()
     bank_amount: number;
 
-    @Column({ default: true })
-    @IsBoolean()
-    use_yn: boolean;
-
-    @Column()
-    @IsNumber()
-    reg_idx: number;
-
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     @IsString()
     reg_dt: string;
+
+    @ManyToOne(() => User, user => user.piggyBanks, { nullable: false, onDelete: 'CASCADE' })
+    user: User
 }
