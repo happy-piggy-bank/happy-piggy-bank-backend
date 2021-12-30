@@ -16,9 +16,13 @@ export class PiggyBank {
     @IsString()
     bank_content: string;
 
-    @Column()
+    @Column({ default: 0 })
     @IsNumber()
     bank_amount: number;
+
+    @Column({ nullable: true, length: 500 })
+    @IsString()
+    content_img: string;
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     @IsString()
