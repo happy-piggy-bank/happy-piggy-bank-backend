@@ -10,23 +10,23 @@ export class User {
 
     @Column()
     @IsString()
-    user_email: string;
+    userEmail: string;
 
     @Column()
     @IsString()
-    user_pw: string;
+    userPw: string;
 
     @Column()
     @IsString()
-    user_name: string;
+    userName: string;
 
     @Column({ nullable: true, length: 300 })
     @IsString()
-    auth_token: string;
+    authToken: string;
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     @IsString()
-    reg_dt: string;
+    regDt: string;
 
     @OneToMany(() => PiggyBank, piggyBank => piggyBank.user)
     piggyBanks: PiggyBank[]

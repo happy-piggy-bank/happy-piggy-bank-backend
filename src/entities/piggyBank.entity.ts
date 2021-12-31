@@ -10,23 +10,23 @@ export class PiggyBank {
 
     @Column()
     @IsString()
-    bank_title: string;
+    bankTitle: string;
 
     @Column({ type: 'text' })
     @IsString()
-    bank_content: string;
+    bankContents: string;
 
     @Column({ default: 0 })
     @IsNumber()
-    bank_amount: number;
+    bankAmount: number;
 
     @Column({ nullable: true, length: 500 })
     @IsString()
-    content_img: string;
+    contentsImg: string;
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     @IsString()
-    reg_dt: string;
+    regDt: string;
 
     @ManyToOne(() => User, user => user.piggyBanks, { nullable: false, onDelete: 'CASCADE' })
     user: User
