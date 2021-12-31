@@ -7,7 +7,7 @@ import { AppService } from './app.service';
 import { PiggyBank } from './entities/piggyBank.entity';
 import { User } from './entities/user.entity';
 import { UsersController } from './users/users.controller';
-import { UsersService } from './users/users.service';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -32,9 +32,10 @@ import { UsersService } from './users/users.service';
       entities: [User, PiggyBank],
       synchronize: true,
       logging: true
-    })
+    }),
+    UsersModule
 ],
   controllers: [AppController, UsersController],
-  providers: [AppService, UsersService],
+  providers: [AppService],
 })
 export class AppModule {}
