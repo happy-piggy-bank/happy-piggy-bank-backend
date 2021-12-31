@@ -8,6 +8,8 @@ import { PiggyBank } from './entities/piggyBank.entity';
 import { User } from './entities/user.entity';
 import { UsersController } from './users/users.controller';
 import { UsersModule } from './users/users.module';
+import { BankController } from './bank/bank.controller';
+import { BankModule } from './bank/bank.module';
 
 @Module({
   imports: [
@@ -33,9 +35,10 @@ import { UsersModule } from './users/users.module';
       synchronize: true,
       logging: true
     }),
-    UsersModule
+    UsersModule,
+    BankModule
 ],
-  controllers: [AppController, UsersController],
+  controllers: [AppController, UsersController, BankController],
   providers: [AppService],
 })
 export class AppModule {}
