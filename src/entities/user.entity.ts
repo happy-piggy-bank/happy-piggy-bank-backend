@@ -8,6 +8,10 @@ export class User {
     @IsNumber()
     id: number;
 
+    @Column({ unique: true })
+    @IsString()
+    userNum: string;
+
     @Column()
     @IsString()
     userEmail: string;
