@@ -10,7 +10,6 @@ import { UsersController } from './users/users.controller';
 import { UsersModule } from './users/users.module';
 import { BankController } from './bank/bank.controller';
 import { BankModule } from './bank/bank.module';
-import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -37,8 +36,7 @@ import { AuthModule } from './auth/auth.module';
       logging: true
     }),
     UsersModule,
-    BankModule,
-    AuthModule
+    BankModule
 ],
   controllers: [AppController, UsersController, BankController],
   providers: [AppService],
