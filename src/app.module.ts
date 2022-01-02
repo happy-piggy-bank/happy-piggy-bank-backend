@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
@@ -11,6 +11,7 @@ import { UsersModule } from './users/users.module';
 import { BankController } from './bank/bank.controller';
 import { BankModule } from './bank/bank.module';
 import { JwtModule } from './jwt/jwt.module';
+import { AppMiddleware } from './app.middleware';
 
 @Module({
   imports: [
@@ -44,4 +45,14 @@ import { JwtModule } from './jwt/jwt.module';
   controllers: [AppController, UsersController, BankController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+      consumer
+        .apply(AppMiddleware)
+        .exclude(
+          'users/login',
+          'users/join'
+        )
+        .forRoutes('*');
+  }
+}
