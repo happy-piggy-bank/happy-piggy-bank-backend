@@ -12,7 +12,7 @@ export class JwtService {
     ) {}
 
     async getJwtToken(userId: number) {
-        const token = jwt.sign({ userId }, process.env.JWT_SECRET);
+        const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
         await this.users.update({ id: userId }, { authToken: token });
         return token;
     }
