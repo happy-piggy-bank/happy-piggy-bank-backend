@@ -10,7 +10,7 @@ import { UsersController } from './users/users.controller';
 import { UsersModule } from './users/users.module';
 import { BankController } from './bank/bank.controller';
 import { BankModule } from './bank/bank.module';
-import { JwtModule } from './jwt/jwt.module';
+import { JwtModule } from './utils/jwt/jwt.module';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 
 @Module({
