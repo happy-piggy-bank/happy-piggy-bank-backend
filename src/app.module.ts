@@ -12,7 +12,7 @@ import { BankController } from './bank/bank.controller';
 import { BankModule } from './bank/bank.module';
 import { JwtModule } from './utils/jwt/jwt.module';
 import { AuthMiddleware } from './middlewares/auth.middleware';
-import { FilesModule } from './utils/files/files.module';
+import { FileModule } from './utils/file/file.module';
 
 @Module({
   imports: [
@@ -27,7 +27,7 @@ import { FilesModule } from './utils/files/files.module';
         DB_PASSWORD: Joi.string().required(),
         DB_NAME: Joi.string().required(),
         AWS_S3_BUCKET: Joi.string().required(),
-        AWS_ACCESS_KEY: Joi.string().required(),
+        AWS_ACCESS_KEY_ID: Joi.string().required(),
         AWS_SECRET_ACCESS_KEY: Joi.string().required(),
         AWS_REGION: Joi.string().required(),
         JWT_SECRET: Joi.string().required()
@@ -47,7 +47,7 @@ import { FilesModule } from './utils/files/files.module';
     UsersModule,
     BankModule,
     JwtModule,
-    FilesModule
+    FileModule
 ],
   controllers: [AppController, UsersController, BankController],
   providers: [AppService],
