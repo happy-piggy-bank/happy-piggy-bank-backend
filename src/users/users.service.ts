@@ -90,4 +90,22 @@ export class UsersService {
             };
         }
     }
+
+    async logoutUser(userId: number) {
+        try {
+            await this.users.update({ id: userId }, { authToken: '' });
+            return {
+                statusCode: HttpStatus.OK,
+                result: "logout_success",
+                message: "로그아웃 성공"
+            }
+        } catch (err) {
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                result: "internal_server_error",
+                message: "서버 에러",
+                error: err
+            };
+        }
+    }
 }
