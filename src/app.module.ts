@@ -11,7 +11,7 @@ import { UsersModule } from './users/users.module';
 import { BankController } from './bank/bank.controller';
 import { BankModule } from './bank/bank.module';
 import { JwtModule } from './jwt/jwt.module';
-import { AppMiddleware } from './app.middleware';
+import { AuthMiddleware } from './middlewares/auth.middleware';
 
 @Module({
   imports: [
@@ -48,7 +48,7 @@ import { AppMiddleware } from './app.middleware';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
       consumer
-        .apply(AppMiddleware)
+        .apply(AuthMiddleware)
         .exclude(
           'users/login',
           'users/join'
