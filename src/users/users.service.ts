@@ -21,7 +21,7 @@ export class UsersService {
                 userEmail: loginData.userEmail,
                 userPw: createHmac('sha256', 'secret').update(loginData.userPw).digest('hex')
             }, {
-                select: ['userNum', 'userEmail', 'userName']
+                select: ['id', 'userNum', 'userEmail', 'userName']
             })
             if (!userInfo) {
                 return {
