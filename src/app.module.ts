@@ -12,6 +12,7 @@ import { BankController } from './bank/bank.controller';
 import { BankModule } from './bank/bank.module';
 import { JwtModule } from './utils/jwt/jwt.module';
 import { AuthMiddleware } from './middlewares/auth.middleware';
+import { FilesModule } from './utils/files/files.module';
 
 @Module({
   imports: [
@@ -41,7 +42,8 @@ import { AuthMiddleware } from './middlewares/auth.middleware';
     }),
     UsersModule,
     BankModule,
-    JwtModule
+    JwtModule,
+    FilesModule
 ],
   controllers: [AppController, UsersController, BankController],
   providers: [AppService],
