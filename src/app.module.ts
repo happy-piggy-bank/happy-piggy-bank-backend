@@ -19,6 +19,7 @@ import { AuthMiddleware } from './middlewares/auth.middleware';
       envFilePath: '.env',
       isGlobal: true,
       validationSchema: Joi.object({
+        CORS_ORIGIN: Joi.string().required(),
         DB_HOST: Joi.string().required(),
         DB_PORT: Joi.string().required(),
         DB_USERNAME: Joi.string().required(),
@@ -50,6 +51,7 @@ export class AppModule implements NestModule {
       consumer
         .apply(AuthMiddleware)
         .exclude(
+          '/',
           'users/login',
           'users/join'
         )
