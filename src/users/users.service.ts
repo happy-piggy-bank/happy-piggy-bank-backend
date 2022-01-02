@@ -20,6 +20,8 @@ export class UsersService {
             const userInfo = await this.users.findOne({
                 userEmail: loginData.userEmail,
                 userPw: createHmac('sha256', 'secret').update(loginData.userPw).digest('hex')
+            }, {
+                select: ['userNum', 'userEmail', 'userName']
             })
             if (!userInfo) {
                 return {
@@ -33,7 +35,7 @@ export class UsersService {
                     statusCode: HttpStatus.OK,
                     result: "login_success",
                     message: "로그인 성공",
-                    token
+                    data: { ...userInfo, token }
                 }
             }
         } catch (err) {
@@ -74,12 +76,12 @@ export class UsersService {
     
             const createResult = await this.users.save(newUserData);
             const token = await this.jwtService.getJwtToken(createResult.id);
-
+            const userInfo = await this.users.findOne({ id: createResult.id }, { select: ['userNum', 'userEmail', 'userName'] });
             return {
                 statusCode: HttpStatus.CREATED,
                 result: "success",
                 message: "회원가입에 성공하였습니다.",
-                token
+                data: {...userInfo, token }
             }
         } catch (err) {
             return {
