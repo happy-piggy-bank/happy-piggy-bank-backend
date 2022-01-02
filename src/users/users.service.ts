@@ -2,16 +2,50 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHmac } from 'crypto';
 import { User } from 'src/entities/user.entity';
+import { JwtService } from 'src/jwt/jwt.service';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/createUser.dto';
+import { LoginUserDto } from './dtos/loginUser.dto';
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectRepository(User)
-        private readonly users: Repository<User>
+        private readonly users: Repository<User>,
+        private readonly jwtService: JwtService 
     ) {}
-    
+
+    async loginUser(loginData: LoginUserDto) {
+        try {
+            const userInfo = await this.users.findOne({
+                userEmail: loginData.userEmail,
+                userPw: createHmac('sha256', 'secret').update(loginData.userPw).digest('hex')
+            })
+            if (!userInfo) {
+                return {
+                    statusCode: HttpStatus.NOT_FOUND,
+                    result: "login_fail",
+                    message: "로그인 실패"
+                }
+            } else {
+                const token = await this.jwtService.getJwtToken(userInfo.id);
+                return {
+                    statusCode: HttpStatus.OK,
+                    result: "login_success",
+                    message: "로그인 성공",
+                    token
+                }
+            }
+        } catch (err) {
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                result: "internal_server_error",
+                message: "서버 에러",
+                error: err
+            };
+        }
+    }
+
     async createUser(userData: CreateUserDto) {
         try {
             const checkEmailDuplicates = await this.users.count({ userEmail: userData.userEmail });
@@ -38,12 +72,14 @@ export class UsersService {
                 userPw: createHmac('sha256', 'secret').update(userData.userPw).digest('hex')
             }
     
-            await this.users.save(newUserData);
+            const createResult = await this.users.save(newUserData);
+            const token = await this.jwtService.getJwtToken(createResult.id);
 
             return {
                 statusCode: HttpStatus.CREATED,
                 result: "success",
-                message: "회원가입에 성공하였습니다."
+                message: "회원가입에 성공하였습니다.",
+                token
             }
         } catch (err) {
             return {

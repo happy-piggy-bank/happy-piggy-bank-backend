@@ -9,7 +9,10 @@ export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
     @Post('login')
-    async loginUser(@Body() loginData: LoginUserDto, @Res() res: Response) {}
+    async loginUser(@Body() loginData: LoginUserDto, @Res() res: Response) {
+        const result = await this.usersService.loginUser(loginData);
+        return res.status(result.statusCode).send(result);
+    }
 
     @Post('join')
     async createUser(@Body() userData: CreateUserDto, @Res() res: Response) {
