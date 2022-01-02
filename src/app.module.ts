@@ -10,6 +10,7 @@ import { UsersController } from './users/users.controller';
 import { UsersModule } from './users/users.module';
 import { BankController } from './bank/bank.controller';
 import { BankModule } from './bank/bank.module';
+import { JwtModule } from './jwt/jwt.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { BankModule } from './bank/bank.module';
         DB_PORT: Joi.string().required(),
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
-        DB_NAME: Joi.string().required()
+        DB_NAME: Joi.string().required(),
+        JWT_SECRET: Joi.string().required()
       })
     }),
     TypeOrmModule.forRoot({
@@ -36,7 +38,8 @@ import { BankModule } from './bank/bank.module';
       logging: true
     }),
     UsersModule,
-    BankModule
+    BankModule,
+    JwtModule
 ],
   controllers: [AppController, UsersController, BankController],
   providers: [AppService],
