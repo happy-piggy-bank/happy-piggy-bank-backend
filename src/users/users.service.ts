@@ -95,7 +95,7 @@ export class UsersService {
 
     async logoutUser(userId: number) {
         try {
-            await this.users.update({ id: userId }, { authToken: '' });
+            await this.users.update({ id: userId }, { authToken: null });
             return {
                 statusCode: HttpStatus.OK,
                 result: "logout_success",

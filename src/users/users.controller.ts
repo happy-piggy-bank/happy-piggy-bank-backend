@@ -21,7 +21,10 @@ export class UsersController {
     }
 
     @Post('logout')
-    async lougoutUser() {}
+    async lougoutUser(@Res() res: Response) {
+        const result = await this.usersService.logoutUser(res.locals.userId);
+        return res.status(result.statusCode).send(result);
+    }
 
     @Get('myInfo')
     async getUserInfo() {}
