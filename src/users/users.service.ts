@@ -110,4 +110,31 @@ export class UsersService {
             };
         }
     }
+
+    async getUser(userId: number) {
+        try {
+            const userInfo = await this.users.findOne({ id: userId }, { select: ['userEmail', 'userName'] });
+            if (!userInfo) {
+                return {
+                    statusCode: HttpStatus.BAD_REQUEST,
+                    result: "user_not_found",
+                    message: "해당 유저 없음"
+                }
+            } else {
+                return {
+                    statusCode: HttpStatus.OK,
+                    result: "success",
+                    message: "유저 정보 조회 성공",
+                    data: userInfo
+                }
+            }
+        } catch (err) {
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                result: "internal_server_error",
+                message: "서버 에러",
+                error: err
+            };
+        }
+    }
 }

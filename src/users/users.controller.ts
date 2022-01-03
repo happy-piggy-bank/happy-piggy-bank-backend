@@ -27,7 +27,10 @@ export class UsersController {
     }
 
     @Get('myInfo')
-    async getUserInfo() {}
+    async getUserInfo(@Res() res: Response) {
+        const result = await this.usersService.getUser(res.locals.userId);
+        return res.status(result.statusCode).send(result);
+    }
 
     @Put('myInfo')
     async modifyUserInfo() {}
