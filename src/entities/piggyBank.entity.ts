@@ -24,6 +24,10 @@ export class PiggyBank {
     @IsNumber()
     bankAmount: number;
 
+    @Column({ nullable: true, length: 500 })
+    @IsString()
+    contentsImg: string;
+
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     @IsString()
     regDt: string;
