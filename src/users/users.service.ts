@@ -188,4 +188,22 @@ export class UsersService {
             };
         }
     }
+
+    async deleteUser(userId: number) {
+        try {
+            await this.users.delete({ id: userId });
+            return {
+                statusCode: HttpStatus.OK,
+                result: "user_leave_success",
+                message: "사용자 탈퇴 완료"
+            }
+        } catch (err) {
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                result: "internal_server_error",
+                message: "서버 에러",
+                error: err
+            };
+        }
+    }
 }

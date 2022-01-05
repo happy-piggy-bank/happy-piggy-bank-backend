@@ -40,5 +40,8 @@ export class UsersController {
     }
 
     @Delete('leave')
-    async deteleUser() {}
+    async deteleUser(@Res() res: Response) {
+        const result = await this.usersService.deleteUser(res.locals.userId);
+        return res.status(result.statusCode).send(result);
+    }
 }
