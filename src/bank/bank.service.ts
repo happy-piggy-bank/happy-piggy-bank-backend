@@ -52,11 +52,11 @@ export class BankService {
 
     async createBank(file: Express.MulterS3.File, createData: CreateBankDto, userId: number) {
         try {
-            const createResult = await this.banks.save({ ...createData, contentsImg: file.location, userId });
+            await this.banks.save({ ...createData, contentsImg: file.location, userId });
             return {
                 statusCode: HttpStatus.CREATED,
                 result: "bank_create_success",
-                data: createResult
+                message: "저금 내역 등록 성공"
             }
         } catch (err) {
             return {
