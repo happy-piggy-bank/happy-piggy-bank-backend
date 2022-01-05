@@ -67,4 +67,40 @@ export class BankService {
             };
         }
     }
+
+    async deleteBank(bankId: number, userId: number) {
+        try {
+            const bankInfo = await this.banks.findOne({ id: bankId, userId: userId });
+            if (!bankInfo) {
+                return {
+                    statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+                    result: "bank_not_found",
+                    message: "해당 내역 없음"
+                }
+            } else {
+                if (bankInfo.contentsImg) {
+                    const uriSplit = bankInfo.contentsImg.split('/');
+                    const fileKey = uriSplit[uriSplit.length - 1];
+                    const params = {
+                        Bucket: 'happypiggybank-attachments',
+                        Key: fileKey
+                    };
+                    await s3.deleteObject(params).promise();
+                }
+                await this.banks.delete({ id: bankId, userId: userId });
+                return {
+                    statusCode: HttpStatus.OK,
+                    result: "bank_delete_success",
+                    message: "저금 내역 삭제 성공"
+                }
+            }
+        } catch (err) {
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                result: "internal_server_error",
+                message: "서버 에러",
+                error: err
+            };
+        }
+    }
 }

@@ -44,8 +44,11 @@ export class BankController {
         return res.status(result.statusCode).send(result);
     }
 
-    @Delete('remove')
-    async deleteBank(@Req() req: Request, @Res() res: Response) {}
+    @Delete('remove/:bankId')
+    async deleteBank(@Req() req: Request | any, @Res() res: Response) {
+        const result = await this.bankService.deleteBank(req.params.bankId, res.locals.userId);
+        return res.status(result.statusCode).send(result);
+    }
 
     @Get('detail/:bankId')
     async getBankDetail(@Req() req: Request, @Res() res: Response) {}
