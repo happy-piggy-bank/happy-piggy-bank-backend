@@ -9,6 +9,10 @@ export class PiggyBank {
     id: number;
 
     @Column()
+    @IsNumber()
+    userId: number;
+
+    @Column()
     @IsString()
     bankTitle: string;
 
@@ -28,6 +32,6 @@ export class PiggyBank {
     @IsString()
     regDt: string;
 
-    @ManyToOne(() => User, user => user.piggyBanks, { nullable: true, onDelete: 'CASCADE' })
+    @ManyToOne(() => User, user => user.piggyBanks, { nullable: false, onDelete: 'CASCADE' })
     user: User
 }
