@@ -14,7 +14,10 @@ export class BankController {
     ) {}
 
     @Get('total-stats')
-    async getTotalStatistics(@Req() req: Request, @Res() res: Response) {}
+    async getTotalStatistics(@Res() res: Response) {
+        const result = await this.bankService.getTotalStatistics();
+        return res.status(result.statusCode).send(result);
+    }
 
     @Get('this-year')
     async getThisYearBankList(@Req() req: Request, @Res() res: Response) {}
