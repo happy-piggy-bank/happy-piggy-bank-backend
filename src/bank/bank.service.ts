@@ -41,9 +41,9 @@ export class BankService {
         }
     }
 
-    async createBank(file: Express.MulterS3.File, createData: CreateBankDto, userId: number) {
+    async createBank(createData: CreateBankDto, userId: number) {
         try {
-            await this.banks.save({ ...createData, contentsImg: file.location, userId });
+            await this.banks.save({ ...createData, userId });
             return {
                 statusCode: HttpStatus.CREATED,
                 result: "bank_create_success",

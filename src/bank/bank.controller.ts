@@ -1,18 +1,6 @@
-import { Controller, Delete, Get, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Delete, Get, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { BankService } from './bank.service';
-import * as multerS3 from 'multer-s3';
-import * as AWS from 'aws-sdk';
-import { FileInterceptor } from '@nestjs/platform-express';
-
-AWS.config.update({
-    "accessKeyId": process.env.AWS_ACCESS_KEY_ID,
-    "secretAccessKey": process.env.AWS_SECRET_ACCESS_KEY,
-    "region": process.env.AWS_REGION
-});
-
-const s3 = new AWS.S3();
-
 @Controller('bank')
 export class BankController {
     constructor(
@@ -35,18 +23,8 @@ export class BankController {
     async getYearList(@Req() req: Request, @Res() res: Response) {}
 
     @Post('new')
-    @UseInterceptors(FileInterceptor('file', {
-        storage: multerS3({
-            s3: s3,
-            bucket: 'happypiggybank-attachments',
-            acl: 'public-read',
-            key: function(req, file, cb) {
-                cb(null, `${Date.now().toString()}-${file.originalname}`)
-            }
-        })
-    }))
-    async createBank(@Req() req: Request, @Res() res: Response, @UploadedFile() file: Express.MulterS3.File) {
-        const result = await this.bankService.createBank(file, req.body, res.locals.userId);
+    async createBank(@Req() req: Request, @Res() res: Response) {
+        const result = await this.bankService.createBank(req.body, res.locals.userId);
         return res.status(result.statusCode).send(result);
     }
 
