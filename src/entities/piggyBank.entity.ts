@@ -28,6 +28,6 @@ export class PiggyBank {
     @IsString()
     regDt: string;
 
-    @ManyToOne(() => User, user => user.piggyBanks, { nullable: false, onDelete: 'CASCADE' })
+    @ManyToOne(() => User, user => user.piggyBanks, { nullable: true, onDelete: 'CASCADE' })
     user: User
 }
