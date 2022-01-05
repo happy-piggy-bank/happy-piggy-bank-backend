@@ -6,6 +6,7 @@ import { JwtService } from 'src/utils/jwt/jwt.service';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { LoginUserDto } from './dtos/loginUser.dto';
+import { UpdateUserDto } from './dtos/updateUser.dto';
 
 @Injectable()
 export class UsersService {
@@ -127,6 +128,56 @@ export class UsersService {
                     message: "유저 정보 조회 성공",
                     data: userInfo
                 }
+            }
+        } catch (err) {
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                result: "internal_server_error",
+                message: "서버 에러",
+                error: err
+            };
+        }
+    }
+
+    async updateUser(updateData: UpdateUserDto, userId: number) {
+        let updateResult = {};
+
+        try {
+            if (updateData.userName) {
+                const checkUserNameDuplicates = await this.users.count({ userName: updateData.userName });
+                if (checkUserNameDuplicates > 0) {
+                    return {
+                        statusCode: HttpStatus.CONFLICT,
+                        result: "user_name_duplicates",
+                        message: "사용자 이름 중복"
+                    }
+                } else {
+                    Object.assign(updateResult, { userName: updateData.userName });
+                }
+            }
+
+            if (updateData.userPw) {
+                const newPw = createHmac('sha256', 'secret').update(updateData.userPw).digest('hex');
+                const checkPw = await this.users.count({ id: userId, userPw: newPw });
+                if (checkPw > 0) {
+                    return {
+                        statusCode: HttpStatus.CONFLICT,
+                        result: "same_password",
+                        message: "기존 비밀번호와 동일한 비밀번호"
+                    }
+                } else {
+                    Object.assign(updateResult, { userPw: newPw });
+                }
+            }
+
+            if (Object.keys(updateResult).length > 0) {
+                await this.users.update({ id: userId }, updateResult);
+            }
+
+            return {
+                statusCode: HttpStatus.OK,
+                result: "user_update_success",
+                message: "사용자 정보 업데이트 성공"
             }
         } catch (err) {
             return {

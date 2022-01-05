@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Post, Put, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { LoginUserDto } from './dtos/loginUser.dto';
+import { UpdateUserDto } from './dtos/updateUser.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -33,7 +34,10 @@ export class UsersController {
     }
 
     @Put('myInfo')
-    async modifyUserInfo() {}
+    async updateUserInfo(@Body() updateData: UpdateUserDto, @Res() res: Response) {
+        const result = await this.usersService.updateUser(updateData, res.locals.userId);
+        return res.status(result.statusCode).send(result);
+    }
 
     @Delete('leave')
     async deteleUser() {}
