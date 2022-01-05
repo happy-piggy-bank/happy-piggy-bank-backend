@@ -59,7 +59,8 @@ export class AppModule implements NestModule {
         .exclude(
           '/',
           'users/login',
-          'users/join'
+          'users/join',
+          'bank/total-stats'
         )
         .forRoutes('*');
   }

@@ -1,4 +1,4 @@
-import { Controller, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Delete, Get, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { BankService } from './bank.service';
 import * as multerS3 from 'multer-s3';
@@ -12,6 +12,18 @@ export class BankController {
     constructor(
         private readonly bankService: BankService
     ) {}
+
+    @Get('total-stats')
+    async getTotalStatistics(@Req() req: Request, @Res() res: Response) {}
+
+    @Get('this-year')
+    async getThisYearBankList(@Req() req: Request, @Res() res: Response) {}
+
+    @Get('old-list')
+    async getOldBankList(@Req() req: Request, @Res() res: Response) {}
+
+    @Get('year-list')
+    async getYearList(@Req() req: Request, @Res() res: Response) {}
 
     @Post('new')
     @UseInterceptors(FileInterceptor('file', {
@@ -28,4 +40,10 @@ export class BankController {
         const result = await this.bankService.createBank(file, req.body, res.locals.userId);
         return res.status(result.statusCode).send(result);
     }
+
+    @Delete('remove')
+    async deleteBank(@Req() req: Request, @Res() res: Response) {}
+
+    @Get('detail/:bankId')
+    async getBankDetail(@Req() req: Request, @Res() res: Response) {}
 }
