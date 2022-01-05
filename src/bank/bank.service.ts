@@ -3,16 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PiggyBank } from 'src/entities/piggyBank.entity';
 import { getRepository, Repository } from 'typeorm';
 import { CreateBankDto } from './dtos/createBank.dto';
-import * as AWS from 'aws-sdk';
 import { User } from 'src/entities/user.entity';
-
-AWS.config.update({
-    "accessKeyId": process.env.AWS_ACCESS_KEY_ID,
-    "secretAccessKey": process.env.AWS_SECRET_ACCESS_KEY,
-    "region": process.env.AWS_REGION
-});
-
-const s3 = new AWS.S3();
 @Injectable()
 export class BankService {
     constructor(
@@ -78,15 +69,6 @@ export class BankService {
                     message: "해당 내역 없음"
                 }
             } else {
-                if (bankInfo.contentsImg) {
-                    const uriSplit = bankInfo.contentsImg.split('/');
-                    const fileKey = uriSplit[uriSplit.length - 1];
-                    const params = {
-                        Bucket: 'happypiggybank-attachments',
-                        Key: fileKey
-                    };
-                    await s3.deleteObject(params).promise();
-                }
                 await this.banks.delete({ id: bankId, userId: userId });
                 return {
                     statusCode: HttpStatus.OK,
