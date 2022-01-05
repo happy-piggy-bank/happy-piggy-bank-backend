@@ -10,9 +10,8 @@ import { UsersController } from './users/users.controller';
 import { UsersModule } from './users/users.module';
 import { BankController } from './bank/bank.controller';
 import { BankModule } from './bank/bank.module';
-import { JwtModule } from './utils/jwt/jwt.module';
 import { AuthMiddleware } from './middlewares/auth.middleware';
-import { FileModule } from './utils/file/file.module';
+import { CommonUtilModule } from './utils/utils.module';
 
 @Module({
   imports: [
@@ -42,8 +41,7 @@ import { FileModule } from './utils/file/file.module';
     }),
     UsersModule,
     BankModule,
-    JwtModule,
-    FileModule
+    CommonUtilModule
 ],
   controllers: [AppController, UsersController, BankController],
   providers: [AppService],
