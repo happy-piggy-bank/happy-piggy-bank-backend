@@ -73,6 +73,7 @@ export class BankService {
                     message: "해당 내역 없음"
                 }
             } else {
+                if (bankInfo.contentsImg) await this.fileService.delete(bankInfo.contentsImg);
                 await this.banks.delete({ id: bankId, userId: userId });
                 return {
                     statusCode: HttpStatus.OK,
