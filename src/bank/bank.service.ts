@@ -122,28 +122,30 @@ export class BankService {
 
     async getThisYearBankList(userId: number, currentPage: number=0) {
         try {
+            const entriesPerPage = 10;
             const thisYear = new Date().getFullYear();
+            const yearCondition = Between(`${thisYear}-01-01`, `${thisYear}-12-31`);
             const totalAmount = await getRepository(PiggyBank)
                 .createQueryBuilder("piggy_bank")
                 .select("SUM(piggy_bank.bankAmount)", "sum")
                 .where([
                     { userId: userId },
-                    { regDt: Between(`${thisYear}-01-01`, `${thisYear}-12-31`) }
+                    { regDt: yearCondition }
                 ])
                 .getRawOne();
             const totalCount = await this.banks.count({
                 where: [
                     { userId: userId },
-                    { regDt: Between(`${thisYear}-01-01`, `${thisYear}-12-31`) }
+                    { regDt: yearCondition }
                 ]
             });
             const bankList = await this.banks.find({
                 where: [
                     { userId: userId },
-                    { regDt: Between(`${thisYear}-01-01`, `${thisYear}-12-31`) }
+                    { regDt: yearCondition }
                 ],
-                skip: currentPage * 10,
-                take: 10,
+                skip: currentPage * entriesPerPage,
+                take: entriesPerPage,
                 select: ['id', 'bankAmount', 'regDt'],
                 order: { regDt: 'DESC' }
             });
