@@ -1,4 +1,5 @@
-import { Controller, Delete, Get, Post, Req, Res } from '@nestjs/common';
+import { Controller, Delete, Get, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { BankService } from './bank.service';
 @Controller('bank')
@@ -23,8 +24,9 @@ export class BankController {
     async getYearList(@Req() req: Request, @Res() res: Response) {}
 
     @Post('new')
-    async createBank(@Req() req: Request, @Res() res: Response) {
-        const result = await this.bankService.createBank(req.body, res.locals.userId);
+    @UseInterceptors(FileInterceptor('file'))
+    async createBank(@Req() req: Request, @Res() res: Response, @UploadedFile() file: Express.Multer.File) {
+        const result = await this.bankService.createBank(req.body, file, res.locals.userId);
         return res.status(result.statusCode).send(result);
     }
 

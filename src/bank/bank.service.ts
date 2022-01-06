@@ -4,13 +4,15 @@ import { PiggyBank } from 'src/entities/piggyBank.entity';
 import { getRepository, Repository } from 'typeorm';
 import { CreateBankDto } from './dtos/createBank.dto';
 import { User } from 'src/entities/user.entity';
+import { FileService } from 'src/utils/file.service';
 @Injectable()
 export class BankService {
     constructor(
         @InjectRepository(PiggyBank)
         private readonly banks: Repository<PiggyBank>,
         @InjectRepository(User)
-        private readonly users: Repository<User>
+        private readonly users: Repository<User>,
+        private readonly fileService: FileService
     ) {}
 
     async getTotalStatistics() {
@@ -41,9 +43,11 @@ export class BankService {
         }
     }
 
-    async createBank(createData: CreateBankDto, userId: number) {
+    async createBank(createData: CreateBankDto, file: Express.Multer.File, userId: number) {
+        let contentsImg = null;
         try {
-            await this.banks.save({ ...createData, userId });
+            if (file) contentsImg = await this.fileService.upload(file);
+            await this.banks.save({ ...createData, contentsImg, userId });
             return {
                 statusCode: HttpStatus.CREATED,
                 result: "bank_create_success",
