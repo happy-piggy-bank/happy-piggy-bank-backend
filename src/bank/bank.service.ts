@@ -137,6 +137,7 @@ export class BankService {
                 .createQueryBuilder("piggy_bank")
                 .select([
                     "piggy_bank.id AS id",
+                    "piggy_bank.contentsImg AS contentsImg",
                     "piggy_bank.bankAmount AS bankAmount",
                     "piggy_bank.regDt AS regDt"
                 ])
@@ -196,6 +197,7 @@ export class BankService {
                     .createQueryBuilder("piggy_bank")
                     .select([
                         "piggy_bank.id AS id",
+                        "piggy_bank.contentsImg AS contentsImg",
                         "piggy_bank.bankAmount AS bankAmount",
                         "piggy_bank.regDt AS regDt"
                     ])
