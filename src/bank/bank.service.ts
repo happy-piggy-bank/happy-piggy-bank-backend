@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PiggyBank } from 'src/entities/piggyBank.entity';
-import { Between, getRepository, Repository } from 'typeorm';
+import { Between, getRepository, LessThanOrEqual, Repository } from 'typeorm';
 import { CreateBankDto } from './dtos/createBank.dto';
 import { User } from 'src/entities/user.entity';
 import { FileService } from 'src/utils/file.service';
@@ -157,6 +157,68 @@ export class BankService {
                     totalCount,
                     totalAmount: Number(totalAmount.sum),
                     bankList
+                }
+            }
+        } catch (err) {
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                result: "internal_server_error",
+                message: "서버 에러",
+                error: err
+            };
+        }
+    }
+
+    async getOldBankList(userId: number, year?: number, currentPage: number=0) {
+        try {
+            const entriesPerPage = 10;
+            const thisYear = new Date().getFullYear();
+            let yearCondition = null;
+            if (year == thisYear) {
+                return {
+                    statusCode: HttpStatus.BAD_REQUEST,
+                    result: "this_year_blocked",
+                    message: "올해 리스트 조회 불가"
+                }
+            } else {
+                if (year) {
+                    yearCondition = Between(`${year}-01-01`, `${year}-12-31`);
+                } else {
+                    yearCondition = LessThanOrEqual(`${thisYear-1}-12-31`);
+                }
+                const totalAmount = await getRepository(PiggyBank)
+                    .createQueryBuilder("piggy_bank")
+                    .select("SUM(piggy_bank.bankAmount)", "sum")
+                    .where([
+                        { userId: userId },
+                        { regDt: yearCondition }
+                    ])
+                    .getRawOne();
+                const totalCount = await this.banks.count({
+                    where: [
+                        { userId: userId },
+                        { regDt: yearCondition }
+                    ]
+                });
+                const bankList = await this.banks.find({
+                    where: [
+                        { userId: userId },
+                        { regDt: yearCondition }
+                    ],
+                    skip: currentPage * entriesPerPage,
+                    take: entriesPerPage,
+                    select: ['id', 'bankAmount', 'regDt'],
+                    order: { regDt: 'DESC' }
+                });
+                return {
+                    statusCode: HttpStatus.OK,
+                    result: "success",
+                    message: "조회 성공",
+                    data: {
+                        totalCount,
+                        totalAmount: Number(totalAmount.sum),
+                        bankList
+                    }
                 }
             }
         } catch (err) {

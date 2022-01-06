@@ -21,7 +21,10 @@ export class BankController {
     }
 
     @Get('old-list')
-    async getOldBankList(@Req() req: Request, @Res() res: Response) {}
+    async getOldBankList(@Req() req: Request | any, @Res() res: Response) {
+        const result = await this.bankService.getOldBankList(res.locals.userId, req.query.year, req.query.currentPage);
+        return res.status(result.statusCode).send(result);
+    }
 
     @Get('year-list')
     async getYearList(@Req() req: Request, @Res() res: Response) {
