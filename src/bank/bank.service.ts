@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PiggyBank } from 'src/entities/piggyBank.entity';
-import { getRepository, Repository } from 'typeorm';
+import { Between, getRepository, Repository } from 'typeorm';
 import { CreateBankDto } from './dtos/createBank.dto';
 import { User } from 'src/entities/user.entity';
 import { FileService } from 'src/utils/file.service';
@@ -109,6 +109,53 @@ export class BankService {
                 result: "success",
                 message: "연도 리스트 조회 성공",
                 data: yearList
+            }
+        } catch (err) {
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                result: "internal_server_error",
+                message: "서버 에러",
+                error: err
+            };
+        }
+    }
+
+    async getThisYearBankList(userId: number, currentPage: number=0) {
+        try {
+            const thisYear = new Date().getFullYear();
+            const totalAmount = await getRepository(PiggyBank)
+                .createQueryBuilder("piggy_bank")
+                .select("SUM(piggy_bank.bankAmount)", "sum")
+                .where([
+                    { userId: userId },
+                    { regDt: Between(`${thisYear}-01-01`, `${thisYear}-12-31`) }
+                ])
+                .getRawOne();
+            const totalCount = await this.banks.count({
+                where: [
+                    { userId: userId },
+                    { regDt: Between(`${thisYear}-01-01`, `${thisYear}-12-31`) }
+                ]
+            });
+            const bankList = await this.banks.find({
+                where: [
+                    { userId: userId },
+                    { regDt: Between(`${thisYear}-01-01`, `${thisYear}-12-31`) }
+                ],
+                skip: currentPage * 10,
+                take: 10,
+                select: ['id', 'bankAmount', 'regDt'],
+                order: { regDt: 'DESC' }
+            });
+            return {
+                statusCode: HttpStatus.OK,
+                result: "success",
+                message: "조회 성공",
+                data: {
+                    totalCount,
+                    totalAmount: Number(totalAmount.sum),
+                    bankList
+                }
             }
         } catch (err) {
             return {
