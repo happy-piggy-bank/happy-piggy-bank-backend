@@ -225,4 +225,44 @@ export class BankService {
             };
         }
     }
+
+    async getBankDetail(userId: number, bankId: number) {
+        try {
+            const thisYear = new Date().getFullYear();
+            const thisMonth = new Date().getMonth();
+            const bankDetail = await this.banks.findOne({ id: bankId, userId: userId }, {
+                select: ['id', 'bankTitle', 'bankContents', 'bankAmount', 'contentsImg', 'regDt']
+            });
+            if (!bankDetail) {
+                return {
+                    statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+                    result: "record_not_found",
+                    message: "해당 내역 찾을 수 없음"
+                }
+            } else {
+                const dataYear = new Date(bankDetail.regDt).getFullYear();
+                if (thisYear === dataYear && thisMonth < 12) {
+                    return {
+                        statusCode: HttpStatus.BAD_REQUEST,
+                        result: "not_yet_open",
+                        message: "아직 열 수 없음"
+                    }
+                } else {
+                    return {
+                        statusCode: HttpStatus.OK,
+                        result: "success",
+                        message: "조회 성공",
+                        data: bankDetail
+                    }
+                }
+            }
+        } catch (err) {
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                result: "internal_server_error",
+                message: "서버 에러",
+                error: err
+            };
+        }
+    }
 }

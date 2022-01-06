@@ -46,5 +46,8 @@ export class BankController {
     }
 
     @Get('detail/:bankId')
-    async getBankDetail(@Req() req: Request, @Res() res: Response) {}
+    async getBankDetail(@Req() req: Request | any, @Res() res: Response) {
+        const result = await this.bankService.getBankDetail(res.locals.userId, req.params.bankId);
+        return res.status(result.statusCode).send(result);
+    }
 }
