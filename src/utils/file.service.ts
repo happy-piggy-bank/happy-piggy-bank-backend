@@ -12,20 +12,25 @@ const s3 = new AWS.S3({
 export class FileService {
     async upload(file: Express.Multer.File) {
         try {
-            const fileData = await sharp(file.buffer)
-                .resize(1000, null, { withoutEnlargement: true })
-                .flatten({ background: '#ffffff' })
-                .jpeg({ quality: 100 })
-                .toBuffer();
-            const uploadResult = await s3.upload({
-                Bucket: 'happypiggybank-attachments',
-                ACL: 'public-read',
-                Key: `${Date.now().toString()}-${uuidv4()}.jpg`,
-                Body: fileData
-            }).promise();
+            const mimeTypeFilter = ["image/jpeg", "image/png", "image/gif", "image/x-ms-bmp"];
+            if (!mimeTypeFilter.includes(file.mimetype)) {
+                throw new Error('not_image_file');
+            } else {
+                const fileData = await sharp(file.buffer)
+                    .resize(1000, null, { withoutEnlargement: true })
+                    .flatten({ background: '#ffffff' })
+                    .jpeg({ quality: 100 })
+                    .toBuffer();
+                const uploadResult = await s3.upload({
+                    Bucket: 'happypiggybank-attachments',
+                    ACL: 'public-read',
+                    Key: `${Date.now().toString()}-${uuidv4()}.jpg`,
+                    Body: fileData
+                }).promise();
 
-            console.log('S3 File Upload Success: ', uploadResult.Location);
-            return uploadResult.Location;
+                console.log('S3 File Upload Success: ', uploadResult.Location);
+                return uploadResult.Location;
+            }
         } catch (err) {
             console.log('S3 File Upload Error: ', err);
             return null;
