@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PiggyBank } from 'src/entities/piggyBank.entity';
-import { Between, getRepository, LessThanOrEqual, Repository } from 'typeorm';
+import { getRepository, Repository } from 'typeorm';
 import { CreateBankDto } from './dtos/createBank.dto';
 import { User } from 'src/entities/user.entity';
 import { FileService } from 'src/utils/file.service';
@@ -124,38 +124,35 @@ export class BankService {
         try {
             const entriesPerPage = 10;
             const thisYear = new Date().getFullYear();
-            const yearCondition = Between(`${thisYear}-01-01`, `${thisYear}-12-31`);
-            const totalAmount = await getRepository(PiggyBank)
+            const totalStatistics = await getRepository(PiggyBank)
                 .createQueryBuilder("piggy_bank")
-                .select("SUM(piggy_bank.bankAmount)", "sum")
-                .where([
-                    { userId: userId },
-                    { regDt: yearCondition }
+                .select([
+                    "COUNT(*) AS count",
+                    "SUM(piggy_bank.bankAmount) AS sum"
                 ])
+                .where(`piggy_bank.userId = ${userId}`)
+                .andWhere(`YEAR(piggy_bank.regDt) = ${thisYear}`)
                 .getRawOne();
-            const totalCount = await this.banks.count({
-                where: [
-                    { userId: userId },
-                    { regDt: yearCondition }
-                ]
-            });
-            const bankList = await this.banks.find({
-                where: [
-                    { userId: userId },
-                    { regDt: yearCondition }
-                ],
-                skip: currentPage * entriesPerPage,
-                take: entriesPerPage,
-                select: ['id', 'bankAmount', 'regDt'],
-                order: { regDt: 'DESC' }
-            });
+            const bankList = await getRepository(PiggyBank)
+                .createQueryBuilder("piggy_bank")
+                .select([
+                    "piggy_bank.id AS id",
+                    "piggy_bank.bankAmount AS bankAmount",
+                    "piggy_bank.regDt AS regDt"
+                ])
+                .where(`piggy_bank.userId = ${userId}`)
+                .andWhere(`YEAR(piggy_bank.regDt) = ${thisYear}`)
+                .skip(currentPage * entriesPerPage)
+                .take(entriesPerPage)
+                .orderBy("piggy_bank.regDt", "DESC")
+                .getRawMany();
             return {
                 statusCode: HttpStatus.OK,
                 result: "success",
                 message: "조회 성공",
                 data: {
-                    totalCount,
-                    totalAmount: Number(totalAmount.sum),
+                    totalCount: Number(totalStatistics.count),
+                    totalAmount: Number(totalStatistics.sum),
                     bankList
                 }
             }
@@ -174,7 +171,7 @@ export class BankService {
             const entriesPerPage = 10;
             const thisYear = new Date().getFullYear();
             let yearCondition = null;
-            if (year == thisYear) {
+            if (year >= thisYear) {
                 return {
                     statusCode: HttpStatus.BAD_REQUEST,
                     result: "this_year_blocked",
@@ -182,41 +179,39 @@ export class BankService {
                 }
             } else {
                 if (year) {
-                    yearCondition = Between(`${year}-01-01`, `${year}-12-31`);
+                    yearCondition = `YEAR(piggy_bank.regDt) = ${year}`
                 } else {
-                    yearCondition = LessThanOrEqual(`${thisYear-1}-12-31`);
+                    yearCondition = `YEAR(piggy_bank.regDt) <= ${thisYear-1}`
                 }
-                const totalAmount = await getRepository(PiggyBank)
+                const totalStatistics = await getRepository(PiggyBank)
                     .createQueryBuilder("piggy_bank")
-                    .select("SUM(piggy_bank.bankAmount)", "sum")
-                    .where([
-                        { userId: userId },
-                        { regDt: yearCondition }
+                    .select([
+                        "COUNT(*) AS count",
+                        "SUM(piggy_bank.bankAmount) AS sum"
                     ])
+                    .where(`piggy_bank.userId = ${userId}`)
+                    .andWhere(yearCondition)
                     .getRawOne();
-                const totalCount = await this.banks.count({
-                    where: [
-                        { userId: userId },
-                        { regDt: yearCondition }
-                    ]
-                });
-                const bankList = await this.banks.find({
-                    where: [
-                        { userId: userId },
-                        { regDt: yearCondition }
-                    ],
-                    skip: currentPage * entriesPerPage,
-                    take: entriesPerPage,
-                    select: ['id', 'bankAmount', 'regDt'],
-                    order: { regDt: 'DESC' }
-                });
+                const bankList = await getRepository(PiggyBank)
+                    .createQueryBuilder("piggy_bank")
+                    .select([
+                        "piggy_bank.id AS id",
+                        "piggy_bank.bankAmount AS bankAmount",
+                        "piggy_bank.regDt AS regDt"
+                    ])
+                    .where(`piggy_bank.userId = ${userId}`)
+                    .andWhere(yearCondition)
+                    .skip(currentPage * entriesPerPage)
+                    .take(entriesPerPage)
+                    .orderBy("piggy_bank.regDt", "DESC")
+                    .getRawMany();
                 return {
                     statusCode: HttpStatus.OK,
                     result: "success",
                     message: "조회 성공",
                     data: {
-                        totalCount,
-                        totalAmount: Number(totalAmount.sum),
+                        totalCount: Number(totalStatistics.count),
+                        totalAmount: Number(totalStatistics.sum),
                         bankList
                     }
                 }
