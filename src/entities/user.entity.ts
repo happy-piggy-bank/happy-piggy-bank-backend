@@ -28,6 +28,10 @@ export class User {
     @IsString()
     authToken: string;
 
+    @Column({ nullable: true, length: 300 })
+    @IsString()
+    uuid: string;
+
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     @IsString()
     regDt: string;
