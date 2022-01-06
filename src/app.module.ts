@@ -41,7 +41,8 @@ import { CommonUtilModule } from './utils/utils.module';
       database: process.env.DB_NAME,
       entities: [User, PiggyBank],
       synchronize: true,
-      logging: true
+      logging: true,
+      timezone: 'Z'
     }),
     UsersModule,
     BankModule,
