@@ -28,7 +28,7 @@ export class FileService {
             return uploadResult.Location;
         } catch (err) {
             console.log('S3 File Upload Error: ', err);
-            return 'ERROR';
+            return null;
         }
     }
 
