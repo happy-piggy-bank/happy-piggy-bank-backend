@@ -21,7 +21,10 @@ export class BankController {
     async getOldBankList(@Req() req: Request, @Res() res: Response) {}
 
     @Get('year-list')
-    async getYearList(@Req() req: Request, @Res() res: Response) {}
+    async getYearList(@Req() req: Request, @Res() res: Response) {
+        const result = await this.bankService.getYearList(res.locals.userId);
+        return res.status(result.statusCode).send(result);
+    }
 
     @Post('new')
     @UseInterceptors(FileInterceptor('file'))

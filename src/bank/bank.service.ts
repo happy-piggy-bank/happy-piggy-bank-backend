@@ -90,4 +90,33 @@ export class BankService {
             };
         }
     }
+
+    async getYearList(userId: number) {
+        let yearList = [];
+        try {
+            const yearRawData = await getRepository(PiggyBank)
+                .createQueryBuilder("piggy_bank")
+                .select("MIN(piggy_bank.regDt)", "date")
+                .where({ userId: userId })
+                .getRawOne();
+            const oldestYear = yearRawData.date.getFullYear();
+            const thisYear = new Date().getFullYear();
+            for (let i = thisYear - 1; i >= oldestYear; i--) {
+                yearList.push({ value: i, label: `${i}년` });
+            }
+            return {
+                statusCode: HttpStatus.OK,
+                result: "success",
+                message: "연도 리스트 조회 성공",
+                data: yearList
+            }
+        } catch (err) {
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                result: "internal_server_error",
+                message: "서버 에러",
+                error: err
+            };
+        }
+    }
 }
