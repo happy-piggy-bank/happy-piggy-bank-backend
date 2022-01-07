@@ -19,7 +19,6 @@ import { CommonUtilModule } from './utils/utils.module';
       envFilePath: '.env',
       isGlobal: true,
       validationSchema: Joi.object({
-        CORS_ORIGIN: Joi.string().required(),
         DB_HOST: Joi.string().required(),
         DB_PORT: Joi.string().required(),
         DB_USERNAME: Joi.string().required(),
