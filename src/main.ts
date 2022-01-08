@@ -5,7 +5,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: {
-      origin: true,
+      origin: ['http://localhost:4000', 'https://happypiggybank.click', 'https://www.happypiggybank.click'],
       credentials: true
     }
   });
