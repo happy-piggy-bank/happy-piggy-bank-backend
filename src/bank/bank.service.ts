@@ -154,6 +154,8 @@ export class BankService {
                 data: {
                     totalCount: Number(totalStatistics.count),
                     totalAmount: Number(totalStatistics.sum),
+                    currentPage: Number(currentPage) + 1,
+                    totalPage: Math.ceil(totalStatistics.count / entriesPerPage),
                     bankList
                 }
             }
@@ -214,6 +216,8 @@ export class BankService {
                     data: {
                         totalCount: Number(totalStatistics.count),
                         totalAmount: Number(totalStatistics.sum),
+                        currentPage: Number(currentPage) + 1,
+                        totalPage: Math.ceil(totalStatistics.count / entriesPerPage),
                         bankList
                     }
                 }
