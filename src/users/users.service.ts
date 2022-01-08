@@ -18,11 +18,11 @@ export class UsersService {
 
     async loginUser(loginData: LoginUserDto) {
         try {
-            const userInfo = await this.users.findOne({
+            let userInfo = await this.users.findOne({
                 userEmail: loginData.userEmail,
                 userPw: createHmac('sha256', 'secret').update(loginData.userPw).digest('hex')
             }, {
-                select: ['userNum', 'userEmail', 'userName']
+                select: ['id', 'userNum', 'userEmail', 'userName']
             })
             if (!userInfo) {
                 return {
@@ -32,6 +32,7 @@ export class UsersService {
                 }
             } else {
                 const token = await this.jwtService.getJwtToken(userInfo.id);
+                delete userInfo.id;
                 return {
                     statusCode: HttpStatus.OK,
                     result: "login_success",
