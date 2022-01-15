@@ -144,18 +144,18 @@ export class UsersService {
         let updateResult = {};
 
         try {
-            if (updateData.userName) {
-                const checkUserNameDuplicates = await this.users.count({ userName: updateData.userName });
-                if (checkUserNameDuplicates > 0) {
-                    return {
-                        statusCode: HttpStatus.CONFLICT,
-                        result: "user_name_duplicates",
-                        message: "사용자 이름 중복"
-                    }
-                } else {
-                    Object.assign(updateResult, { userName: updateData.userName });
-                }
-            }
+            // if (updateData.userName) {
+            //     const checkUserNameDuplicates = await this.users.count({ userName: updateData.userName });
+            //     if (checkUserNameDuplicates > 0) {
+            //         return {
+            //             statusCode: HttpStatus.CONFLICT,
+            //             result: "user_name_duplicates",
+            //             message: "사용자 이름 중복"
+            //         }
+            //     } else {
+            //         Object.assign(updateResult, { userName: updateData.userName });
+            //     }
+            // }
 
             if (updateData.userPw) {
                 const newPw = createHmac('sha256', 'secret').update(updateData.userPw).digest('hex');
