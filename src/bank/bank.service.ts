@@ -236,8 +236,8 @@ export class BankService {
         try {
             const thisYear = new Date().getFullYear();
             const thisMonth = new Date().getMonth();
-            const bankDetail = await this.banks.findOne({ id: bankId, userId: userId }, {
-                select: ['id', 'bankTitle', 'bankContents', 'bankAmount', 'contentsImg', 'regDt']
+            let bankDetail = await this.banks.findOne({ id: bankId }, {
+                select: ['id', 'userId', 'bankTitle', 'bankContents', 'bankAmount', 'contentsImg', 'regDt']
             });
             if (!bankDetail) {
                 return {
@@ -246,6 +246,16 @@ export class BankService {
                     message: "해당 내역 찾을 수 없음"
                 }
             } else {
+                if (userId !== bankDetail.userId) {
+                    return {
+                        statusCode: HttpStatus.UNAUTHORIZED,
+                        result: "bank_is_not_mine",
+                        message: "권한 없음"
+                    }
+                }
+
+                delete bankDetail.userId;
+
                 const dataYear = new Date(bankDetail.regDt).getFullYear();
                 if (thisYear === dataYear && thisMonth < 12) {
                     return {
