@@ -234,11 +234,10 @@ export class BankService {
 
     async getBankDetail(userId: number, bankId: number) {
         try {
-            const thisYear = new Date().getFullYear();
-            const thisMonth = new Date().getMonth();
             let bankDetail = await this.banks.findOne({ id: bankId }, {
                 select: ['id', 'userId', 'bankTitle', 'bankContents', 'bankAmount', 'contentsImg', 'regDt']
             });
+            
             if (!bankDetail) {
                 return {
                     statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -256,20 +255,11 @@ export class BankService {
 
                 delete bankDetail.userId;
 
-                const dataYear = new Date(bankDetail.regDt).getFullYear();
-                if (thisYear === dataYear && thisMonth < 12) {
-                    return {
-                        statusCode: HttpStatus.BAD_REQUEST,
-                        result: "not_yet_open",
-                        message: "아직 열 수 없음"
-                    }
-                } else {
-                    return {
-                        statusCode: HttpStatus.OK,
-                        result: "success",
-                        message: "조회 성공",
-                        data: bankDetail
-                    }
+                return {
+                    statusCode: HttpStatus.OK,
+                    result: "success",
+                    message: "조회 성공",
+                    data: bankDetail
                 }
             }
         } catch (err) {
