@@ -1,10 +1,11 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PiggyBank } from 'src/entities/piggyBank.entity';
 import { getRepository, Repository } from 'typeorm';
 import { CreateBankDto } from './dtos/createBank.dto';
 import { User } from 'src/entities/user.entity';
 import { FileService } from 'src/utils/file.service';
+import httpResponse from '../utils/httpResponse'
 @Injectable()
 export class BankService {
     constructor(
@@ -24,9 +25,7 @@ export class BankService {
                 .select("SUM(piggy_bank.bankAmount)", "sum")
                 .getRawOne();
             return {
-                statusCode: HttpStatus.OK,
-                result: "success",
-                message: "유저 전체 통계 조회 성공",
+                ...httpResponse.OK,
                 data: {
                     totalUserCount,
                     totalBankCount,
@@ -35,9 +34,7 @@ export class BankService {
             }
         } catch (err) {
             return {
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                result: "internal_server_error",
-                message: "서버 에러",
+                ...httpResponse.INTERNAL_SERVER_ERROR,
                 error: err
             };
         }
@@ -48,16 +45,10 @@ export class BankService {
         try {
             if (file) contentsImg = await this.fileService.upload(file);
             await this.banks.save({ ...createData, contentsImg, userId });
-            return {
-                statusCode: HttpStatus.CREATED,
-                result: "bank_create_success",
-                message: "저금 내역 등록 성공"
-            }
+            return httpResponse.CREATED;
         } catch (err) {
             return {
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                result: "internal_server_error",
-                message: "서버 에러",
+                ...httpResponse.INTERNAL_SERVER_ERROR,
                 error: err
             };
         }
@@ -68,24 +59,17 @@ export class BankService {
             const bankInfo = await this.banks.findOne({ id: bankId, userId: userId });
             if (!bankInfo) {
                 return {
-                    statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-                    result: "bank_not_found",
-                    message: "해당 내역 없음"
+                    ...httpResponse.UNPROCESSABLE_ENTITY,
+                    result: "bank_not_found"
                 }
             } else {
                 if (bankInfo.contentsImg) await this.fileService.delete(bankInfo.contentsImg);
                 await this.banks.delete({ id: bankId, userId: userId });
-                return {
-                    statusCode: HttpStatus.OK,
-                    result: "bank_delete_success",
-                    message: "저금 내역 삭제 성공"
-                }
+                return httpResponse.OK;
             }
         } catch (err) {
             return {
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                result: "internal_server_error",
-                message: "서버 에러",
+                ...httpResponse.INTERNAL_SERVER_ERROR,
                 error: err
             };
         }
@@ -105,16 +89,12 @@ export class BankService {
                 yearList.push({ value: i, label: `${i}년` });
             }
             return {
-                statusCode: HttpStatus.OK,
-                result: "success",
-                message: "연도 리스트 조회 성공",
+                ...httpResponse.OK,
                 data: yearList
             }
         } catch (err) {
             return {
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                result: "internal_server_error",
-                message: "서버 에러",
+                ...httpResponse.INTERNAL_SERVER_ERROR,
                 error: err
             };
         }
@@ -148,9 +128,7 @@ export class BankService {
                 .orderBy("piggy_bank.regDt", "DESC")
                 .getRawMany();
             return {
-                statusCode: HttpStatus.OK,
-                result: "success",
-                message: "조회 성공",
+                ...httpResponse.OK,
                 data: {
                     totalCount: Number(totalStatistics.count),
                     totalAmount: Number(totalStatistics.sum),
@@ -161,9 +139,7 @@ export class BankService {
             }
         } catch (err) {
             return {
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                result: "internal_server_error",
-                message: "서버 에러",
+                ...httpResponse.INTERNAL_SERVER_ERROR,
                 error: err
             };
         }
@@ -176,9 +152,8 @@ export class BankService {
             let yearCondition = null;
             if (year >= thisYear) {
                 return {
-                    statusCode: HttpStatus.BAD_REQUEST,
-                    result: "this_year_blocked",
-                    message: "올해 리스트 조회 불가"
+                    ...httpResponse.BAD_REQUEST,
+                    result: "this_year_blocked"
                 }
             } else {
                 if (year) {
@@ -210,9 +185,7 @@ export class BankService {
                     .orderBy("piggy_bank.regDt", "DESC")
                     .getRawMany();
                 return {
-                    statusCode: HttpStatus.OK,
-                    result: "success",
-                    message: "조회 성공",
+                    ...httpResponse.OK,
                     data: {
                         totalCount: Number(totalStatistics.count),
                         totalAmount: Number(totalStatistics.sum),
@@ -224,9 +197,7 @@ export class BankService {
             }
         } catch (err) {
             return {
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                result: "internal_server_error",
-                message: "서버 에러",
+                ...httpResponse.INTERNAL_SERVER_ERROR,
                 error: err
             };
         }
@@ -241,16 +212,14 @@ export class BankService {
             });
             if (!bankDetail) {
                 return {
-                    statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-                    result: "record_not_found",
-                    message: "해당 내역 찾을 수 없음"
+                    ...httpResponse.UNPROCESSABLE_ENTITY,
+                    result: "record_not_found"
                 }
             } else {
                 if (userId !== bankDetail.userId) {
                     return {
-                        statusCode: HttpStatus.UNAUTHORIZED,
-                        result: "bank_is_not_mine",
-                        message: "권한 없음"
+                        ...httpResponse.UNAUTHORIZED,
+                        result: "bank_is_not_mine"
                     }
                 }
 
@@ -259,24 +228,19 @@ export class BankService {
                 const dataYear = new Date(bankDetail.regDt).getFullYear();
                 if (thisYear === dataYear && thisMonth < 12) {
                     return {
-                        statusCode: HttpStatus.BAD_REQUEST,
-                        result: "not_yet_open",
-                        message: "아직 열 수 없음"
+                        ...httpResponse.BAD_REQUEST,
+                        result: "not_yet_open"
                     }
                 } else {
                     return {
-                        statusCode: HttpStatus.OK,
-                        result: "success",
-                        message: "조회 성공",
+                        ...httpResponse.OK,
                         data: bankDetail
                     }
                 }
             }
         } catch (err) {
             return {
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                result: "internal_server_error",
-                message: "서버 에러",
+                ...httpResponse.INTERNAL_SERVER_ERROR,
                 error: err
             };
         }
