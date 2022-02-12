@@ -5,7 +5,7 @@ export class UpdateUserDto {
     @IsString()
     readonly userPw: string;
 
-    // @IsOptional()
-    // @IsString()
-    // readonly userName: string;
+    @IsOptional()
+    @IsString()
+    readonly userName: string;
 }
