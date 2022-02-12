@@ -124,14 +124,17 @@ export class UsersService {
 
         try {
             if (updateData.userName) {
+                const getOldUserName = await this.users.findOne({ id: userId }, { select: ['userName'] });
                 const checkUserNameDuplicates = await this.users.count({ userName: updateData.userName });
-                if (checkUserNameDuplicates > 0) {
-                    return {
-                        ...httpResponse.CONFLICT,
-                        result: "user_name_duplicates"
+                if (updateData.userName !== getOldUserName.userName) {
+                    if (checkUserNameDuplicates > 0) {
+                        return {
+                            ...httpResponse.CONFLICT,
+                            result: "user_name_duplicates"
+                        }
+                    } else {
+                        Object.assign(updateResult, { userName: updateData.userName });
                     }
-                } else {
-                    Object.assign(updateResult, { userName: updateData.userName });
                 }
             }
 
