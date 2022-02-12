@@ -1,7 +1,9 @@
-import { Controller, Delete, Get, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { BankService } from './bank.service';
+import { CreateBankDto } from './dtos/createBank.dto';
+
 @Controller('bank')
 export class BankController {
     constructor(
@@ -15,39 +17,39 @@ export class BankController {
     }
 
     @Get('this-year')
-    async getThisYearBankList(@Req() req: Request | any, @Res() res: Response) {
-        const result = await this.bankService.getThisYearBankList(res.locals.userId, req.query.currentPage);
+    async getThisYearBankList(@Query('currentPage', ParseIntPipe) currentPage: number, @Res() res: Response) {
+        const result = await this.bankService.getThisYearBankList(res.locals.userId, currentPage);
         return res.status(result.statusCode).send(result);
     }
 
     @Get('old-list')
-    async getOldBankList(@Req() req: Request | any, @Res() res: Response) {
-        const result = await this.bankService.getOldBankList(res.locals.userId, req.query.year, req.query.currentPage);
+    async getOldBankList(@Res() res: Response, @Query('year', ParseIntPipe) year?: number, @Query('currentPage', ParseIntPipe) currentPage?: number) {
+        const result = await this.bankService.getOldBankList(res.locals.userId, year, currentPage);
         return res.status(result.statusCode).send(result);
     }
 
     @Get('year-list')
-    async getYearList(@Req() req: Request, @Res() res: Response) {
+    async getYearList(@Res() res: Response) {
         const result = await this.bankService.getYearList(res.locals.userId);
         return res.status(result.statusCode).send(result);
     }
 
     @Post('new')
     @UseInterceptors(FileInterceptor('file'))
-    async createBank(@Req() req: Request, @Res() res: Response, @UploadedFile() file: Express.Multer.File) {
-        const result = await this.bankService.createBank(req.body, file, res.locals.userId);
+    async createBank(@Body() createBankDto: CreateBankDto, @UploadedFile('file') uploadedFile: Express.Multer.File, @Res() res: Response) {
+        const result = await this.bankService.createBank(createBankDto, uploadedFile, res.locals.userId);
         return res.status(result.statusCode).send(result);
     }
 
     @Delete('remove/:bankId')
-    async deleteBank(@Req() req: Request | any, @Res() res: Response) {
-        const result = await this.bankService.deleteBank(req.params.bankId, res.locals.userId);
+    async deleteBank(@Param('bankId', ParseIntPipe) bankId: number, @Res() res: Response) {
+        const result = await this.bankService.deleteBank(bankId, res.locals.userId);
         return res.status(result.statusCode).send(result);
     }
 
     @Get('detail/:bankId')
-    async getBankDetail(@Req() req: Request | any, @Res() res: Response) {
-        const result = await this.bankService.getBankDetail(res.locals.userId, req.params.bankId);
+    async getBankDetail(@Param('bankId', ParseIntPipe) bankId: number, @Res() res: Response) {
+        const result = await this.bankService.getBankDetail(res.locals.userId, bankId);
         return res.status(result.statusCode).send(result);
     }
 }

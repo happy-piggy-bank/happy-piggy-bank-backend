@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsNotEmpty, IsNumberString, IsOptional, IsString } from "class-validator";
 
 export class CreateBankDto {
     @IsNotEmpty()
@@ -10,6 +10,9 @@ export class CreateBankDto {
     bankContents: string;
 
     @IsNotEmpty()
-    @IsNumber()
+    @IsNumberString()
     bankAmount: number;
+
+    @IsOptional()
+    file?: Express.Multer.File;
 }
