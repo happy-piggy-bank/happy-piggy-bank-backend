@@ -1,29 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PiggyBank } from 'src/entities/piggyBank.entity';
-import { getRepository, Repository } from 'typeorm';
 import { CreateBankDto } from './dtos/createBank.dto';
-import { User } from 'src/entities/user.entity';
 import { FileService } from 'src/utils/file.service';
 import httpResponse from '../utils/httpResponse'
+import { BankRepository } from './bank.repository';
+import { UserRepository } from 'src/users/users.repository';
 @Injectable()
 export class BankService {
     constructor(
-        @InjectRepository(PiggyBank)
-        private readonly banks: Repository<PiggyBank>,
-        @InjectRepository(User)
-        private readonly users: Repository<User>,
+        @InjectRepository(BankRepository)
+        private readonly bankRepository: BankRepository,
+        @InjectRepository(UserRepository)
+        private readonly userRepository: UserRepository,
         private readonly fileService: FileService
     ) {}
 
     async getTotalStatistics() {
         try {
-            const totalUserCount = await this.users.count();
-            const totalBankCount = await this.banks.count();
-            const totalBankAmount = await getRepository(PiggyBank)
-                .createQueryBuilder("piggy_bank")
-                .select("SUM(piggy_bank.bankAmount)", "sum")
-                .getRawOne();
+            const totalUserCount = await this.userRepository.count();
+            const totalBankCount = await this.bankRepository.count();
+            const totalBankAmount = await this.bankRepository.getTotalBankAmount();
             return {
                 ...httpResponse.OK,
                 data: {
@@ -44,7 +40,7 @@ export class BankService {
         let contentsImg = null;
         try {
             if (file) contentsImg = await this.fileService.upload(file);
-            await this.banks.save({ ...createData, contentsImg, userId });
+            await this.bankRepository.save({ ...createData, contentsImg, userId });
             return httpResponse.CREATED;
         } catch (err) {
             return {
@@ -56,7 +52,7 @@ export class BankService {
 
     async deleteBank(bankId: number, userId: number) {
         try {
-            const bankInfo = await this.banks.findOne({ id: bankId, userId: userId });
+            const bankInfo = await this.bankRepository.findOne({ id: bankId, userId: userId });
             if (!bankInfo) {
                 return {
                     ...httpResponse.UNPROCESSABLE_ENTITY,
@@ -64,7 +60,7 @@ export class BankService {
                 }
             } else {
                 if (bankInfo.contentsImg) await this.fileService.delete(bankInfo.contentsImg);
-                await this.banks.delete({ id: bankId, userId: userId });
+                await this.bankRepository.delete({ id: bankId, userId: userId });
                 return httpResponse.OK;
             }
         } catch (err) {
@@ -78,11 +74,7 @@ export class BankService {
     async getYearList(userId: number) {
         let yearList = [];
         try {
-            const yearRawData = await getRepository(PiggyBank)
-                .createQueryBuilder("piggy_bank")
-                .select("MIN(piggy_bank.regDt)", "date")
-                .where({ userId: userId })
-                .getRawOne();
+            const yearRawData = await this.bankRepository.getYearRawData(userId);
             const oldestYear = yearRawData.date.getFullYear();
             const thisYear = new Date().getFullYear();
             for (let i = thisYear - 1; i >= oldestYear; i--) {
@@ -101,32 +93,11 @@ export class BankService {
     }
 
     async getThisYearBankList(userId: number, currentPage: number=0) {
+        const entriesPerPage = 10;
+
         try {
-            const entriesPerPage = 10;
-            const thisYear = new Date().getFullYear();
-            const totalStatistics = await getRepository(PiggyBank)
-                .createQueryBuilder("piggy_bank")
-                .select([
-                    "COUNT(*) AS count",
-                    "SUM(piggy_bank.bankAmount) AS sum"
-                ])
-                .where(`piggy_bank.userId = ${userId}`)
-                .andWhere(`YEAR(piggy_bank.regDt) = ${thisYear}`)
-                .getRawOne();
-            const bankList = await getRepository(PiggyBank)
-                .createQueryBuilder("piggy_bank")
-                .select([
-                    "piggy_bank.id AS id",
-                    "piggy_bank.contentsImg AS contentsImg",
-                    "piggy_bank.bankAmount AS bankAmount",
-                    "piggy_bank.regDt AS regDt"
-                ])
-                .where(`piggy_bank.userId = ${userId}`)
-                .andWhere(`YEAR(piggy_bank.regDt) = ${thisYear}`)
-                .skip(currentPage * entriesPerPage)
-                .take(entriesPerPage)
-                .orderBy("piggy_bank.regDt", "DESC")
-                .getRawMany();
+            const totalStatistics = await this.bankRepository.getUserBankStatistics(userId);
+            const bankList = await this.bankRepository.getThisYearBankList(userId, currentPage, entriesPerPage);
             return {
                 ...httpResponse.OK,
                 data: {
@@ -149,41 +120,14 @@ export class BankService {
         try {
             const entriesPerPage = 10;
             const thisYear = new Date().getFullYear();
-            let yearCondition = null;
             if (year >= thisYear) {
                 return {
                     ...httpResponse.BAD_REQUEST,
                     result: "this_year_blocked"
                 }
             } else {
-                if (year) {
-                    yearCondition = `YEAR(piggy_bank.regDt) = ${year}`
-                } else {
-                    yearCondition = `YEAR(piggy_bank.regDt) <= ${thisYear-1}`
-                }
-                const totalStatistics = await getRepository(PiggyBank)
-                    .createQueryBuilder("piggy_bank")
-                    .select([
-                        "COUNT(*) AS count",
-                        "SUM(piggy_bank.bankAmount) AS sum"
-                    ])
-                    .where(`piggy_bank.userId = ${userId}`)
-                    .andWhere(yearCondition)
-                    .getRawOne();
-                const bankList = await getRepository(PiggyBank)
-                    .createQueryBuilder("piggy_bank")
-                    .select([
-                        "piggy_bank.id AS id",
-                        "piggy_bank.contentsImg AS contentsImg",
-                        "piggy_bank.bankAmount AS bankAmount",
-                        "piggy_bank.regDt AS regDt"
-                    ])
-                    .where(`piggy_bank.userId = ${userId}`)
-                    .andWhere(yearCondition)
-                    .skip(currentPage * entriesPerPage)
-                    .take(entriesPerPage)
-                    .orderBy("piggy_bank.regDt", "DESC")
-                    .getRawMany();
+                const totalStatistics = await this.bankRepository.getOldBankStatistics(userId, year);
+                const bankList = await this.bankRepository.getOldBankList(userId, currentPage, entriesPerPage, year);
                 return {
                     ...httpResponse.OK,
                     data: {
@@ -207,7 +151,7 @@ export class BankService {
         try {
             const thisYear = new Date().getFullYear();
             const thisMonth = new Date().getMonth();
-            let bankDetail = await this.banks.findOne({ id: bankId }, {
+            let bankDetail = await this.bankRepository.findOne({ id: bankId }, {
                 select: ['id', 'userId', 'bankTitle', 'bankContents', 'bankAmount', 'contentsImg', 'regDt']
             });
             if (!bankDetail) {

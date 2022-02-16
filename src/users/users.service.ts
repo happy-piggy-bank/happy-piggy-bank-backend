@@ -1,25 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHmac } from 'crypto';
-import { User } from 'src/entities/user.entity';
 import { JwtService } from 'src/utils/jwt.service';
-import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/createUser.dto';
 import { LoginUserDto } from './dtos/loginUser.dto';
 import { UpdateUserDto } from './dtos/updateUser.dto';
 import httpResponse from 'src/utils/httpResponse';
+import { UserRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {
     constructor(
-        @InjectRepository(User)
-        private readonly users: Repository<User>,
-        private readonly jwtService: JwtService 
+        @InjectRepository(UserRepository)
+        private readonly userRepository: UserRepository,
+        private readonly jwtService: JwtService
     ) {}
 
     async loginUser(loginData: LoginUserDto) {
         try {
-            let userInfo = await this.users.findOne({
+            let userInfo = await this.userRepository.findOne({
                 userEmail: loginData.userEmail,
                 userPw: createHmac('sha256', 'secret').update(loginData.userPw).digest('hex')
             }, {
@@ -48,7 +47,7 @@ export class UsersService {
 
     async createUser(userData: CreateUserDto) {
         try {
-            const checkEmailDuplicates = await this.users.count({ userEmail: userData.userEmail });
+            const checkEmailDuplicates = await this.userRepository.count({ userEmail: userData.userEmail });
             if (checkEmailDuplicates > 0) {
                 return {
                     ...httpResponse.CONFLICT,
@@ -56,7 +55,7 @@ export class UsersService {
                 }
             }
 
-            const checkUserNameDuplicates = await this.users.count({ userName: userData.userName });
+            const checkUserNameDuplicates = await this.userRepository.count({ userName: userData.userName });
             if (checkUserNameDuplicates > 0) {
                 return {
                     ...httpResponse.CONFLICT,
@@ -70,9 +69,9 @@ export class UsersService {
                 userPw: createHmac('sha256', 'secret').update(userData.userPw).digest('hex')
             }
     
-            const createResult = await this.users.save(newUserData);
+            const createResult = await this.userRepository.save(newUserData);
             const token = await this.jwtService.getJwtToken(createResult.id);
-            const userInfo = await this.users.findOne({ id: createResult.id }, { select: ['userNum', 'userEmail', 'userName'] });
+            const userInfo = await this.userRepository.findOne({ id: createResult.id }, { select: ['userNum', 'userEmail', 'userName'] });
             return {
                 ...httpResponse.CREATED,
                 data: {...userInfo, token }
@@ -87,7 +86,7 @@ export class UsersService {
 
     async logoutUser(userId: number) {
         try {
-            await this.users.update({ id: userId }, { authToken: null });
+            await this.userRepository.update({ id: userId }, { authToken: null });
             return httpResponse.OK;
         } catch (err) {
             return {
@@ -99,7 +98,7 @@ export class UsersService {
 
     async getUser(userId: number) {
         try {
-            const userInfo = await this.users.findOne({ id: userId }, { select: ['userEmail', 'userName'] });
+            const userInfo = await this.userRepository.findOne({ id: userId }, { select: ['userEmail', 'userName'] });
             if (!userInfo) {
                 return {
                     ...httpResponse.BAD_REQUEST,
@@ -124,9 +123,9 @@ export class UsersService {
 
         try {
             if (updateData.userName) {
-                const getOldUserName = await this.users.findOne({ id: userId }, { select: ['userName'] });
+                const getOldUserName = await this.userRepository.findOne({ id: userId }, { select: ['userName'] });
                 if (updateData.userName !== getOldUserName.userName) {
-                    const checkUserNameDuplicates = await this.users.count({ userName: updateData.userName });
+                    const checkUserNameDuplicates = await this.userRepository.count({ userName: updateData.userName });
                     if (checkUserNameDuplicates > 0) {
                         return {
                             ...httpResponse.CONFLICT,
@@ -140,7 +139,7 @@ export class UsersService {
 
             if (updateData.userPw) {
                 const newPw = createHmac('sha256', 'secret').update(updateData.userPw).digest('hex');
-                const checkPw = await this.users.count({ id: userId, userPw: newPw });
+                const checkPw = await this.userRepository.count({ id: userId, userPw: newPw });
                 if (checkPw > 0) {
                     return {
                         ...httpResponse.CONFLICT,
@@ -152,7 +151,7 @@ export class UsersService {
             }
 
             if (Object.keys(updateResult).length > 0) {
-                await this.users.update({ id: userId }, updateResult);
+                await this.userRepository.update({ id: userId }, updateResult);
             }
 
             return httpResponse.OK;
@@ -166,7 +165,7 @@ export class UsersService {
 
     async deleteUser(userId: number) {
         try {
-            await this.users.delete({ id: userId });
+            await this.userRepository.delete({ id: userId });
             return httpResponse.OK;
         } catch (err) {
             return {
