@@ -1,18 +1,16 @@
 import { PiggyBank } from "src/entities/piggyBank.entity";
-import { EntityRepository, getRepository, Repository } from "typeorm";
+import { EntityRepository, Repository } from "typeorm";
 
 @EntityRepository(PiggyBank)
 export class BankRepository extends Repository<PiggyBank> {
     async getTotalBankAmount(): Promise<any> {
-        return await getRepository(PiggyBank)
-            .createQueryBuilder("piggy_bank")
+        return await this.createQueryBuilder("piggy_bank")
             .select("SUM(piggy_bank.bankAmount)", "sum")
             .getRawOne();
     }
 
     async getYearRawData(userId: number): Promise<any> {
-        return await getRepository(PiggyBank)
-            .createQueryBuilder("piggy_bank")
+        return await this.createQueryBuilder("piggy_bank")
             .select("MIN(piggy_bank.regDt)", "date")
             .where({ userId })
             .getRawOne();
@@ -20,8 +18,7 @@ export class BankRepository extends Repository<PiggyBank> {
 
     async getUserBankStatistics(userId: number): Promise<any> {
         const thisYear = new Date().getFullYear();
-        return await getRepository(PiggyBank)
-            .createQueryBuilder("piggy_bank")
+        return await this.createQueryBuilder("piggy_bank")
             .select([
                 "COUNT(*) AS count",
                 "SUM(piggy_bank.bankAmount) AS sum"
@@ -33,8 +30,7 @@ export class BankRepository extends Repository<PiggyBank> {
 
     async getThisYearBankList(userId: number, currentPage: number=0, entriesPerPage: number=10): Promise<any> {
         const thisYear = new Date().getFullYear();
-        return await getRepository(PiggyBank)
-            .createQueryBuilder("piggy_bank")
+        return await this.createQueryBuilder("piggy_bank")
             .select([
                 "piggy_bank.id AS id",
                 "piggy_bank.contentsImg AS contentsImg",
@@ -52,8 +48,7 @@ export class BankRepository extends Repository<PiggyBank> {
     async getOldBankStatistics(userId: number, year?: number): Promise<any> {
         const thisYear = new Date().getFullYear();
         const yearCondition = year ? `YEAR(piggy_bank.regDt) = ${year}` : `YEAR(piggy_bank.regDt) <= ${thisYear-1}`;
-        return await getRepository(PiggyBank)
-            .createQueryBuilder("piggy_bank")
+        return await this.createQueryBuilder("piggy_bank")
             .select([
                 "COUNT(*) AS count",
                 "SUM(piggy_bank.bankAmount) AS sum"
@@ -66,8 +61,7 @@ export class BankRepository extends Repository<PiggyBank> {
     async getOldBankList(userId: number, currentPage: number=0, entriesPerPage: number=10, year?: number): Promise<any> {
         const thisYear = new Date().getFullYear();
         const yearCondition = year ? `YEAR(piggy_bank.regDt) = ${year}` : `YEAR(piggy_bank.regDt) <= ${thisYear-1}`;
-        return await getRepository(PiggyBank)
-            .createQueryBuilder("piggy_bank")
+        return await this.createQueryBuilder("piggy_bank")
             .select([
                 "piggy_bank.id AS id",
                 "piggy_bank.contentsImg AS contentsImg",
