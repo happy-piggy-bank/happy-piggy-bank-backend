@@ -34,19 +34,19 @@ export class BankRepository extends Repository<PiggyBank> {
     async getThisYearBankList(userId: number, currentPage: number=0, entriesPerPage: number=10): Promise<any> {
         const thisYear = new Date().getFullYear();
         return await getRepository(PiggyBank)
-                .createQueryBuilder("piggy_bank")
-                .select([
-                    "piggy_bank.id AS id",
-                    "piggy_bank.contentsImg AS contentsImg",
-                    "piggy_bank.bankAmount AS bankAmount",
-                    "piggy_bank.regDt AS regDt"
-                ])
-                .where(`piggy_bank.userId = ${userId}`)
-                .andWhere(`YEAR(piggy_bank.regDt) = ${thisYear}`)
-                .skip(currentPage * entriesPerPage)
-                .take(entriesPerPage)
-                .orderBy("piggy_bank.regDt", "DESC")
-                .getRawMany();
+            .createQueryBuilder("piggy_bank")
+            .select([
+                "piggy_bank.id AS id",
+                "piggy_bank.contentsImg AS contentsImg",
+                "piggy_bank.bankAmount AS bankAmount",
+                "piggy_bank.regDt AS regDt"
+            ])
+            .where(`piggy_bank.userId = ${userId}`)
+            .andWhere(`YEAR(piggy_bank.regDt) = ${thisYear}`)
+            .skip(currentPage * entriesPerPage)
+            .take(entriesPerPage)
+            .orderBy("piggy_bank.regDt", "DESC")
+            .getRawMany();
     }
 
     async getOldBankStatistics(userId: number, year?: number): Promise<any> {
