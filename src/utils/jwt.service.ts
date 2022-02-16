@@ -1,20 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/entities/user.entity';
-import { Repository } from 'typeorm';
 import * as jwt from 'jsonwebtoken';
 import { v5 as uuid } from 'uuid';
+import { UserRepository } from 'src/users/users.repository';
 
 @Injectable()
 export class JwtService {
     constructor(
-        @InjectRepository(User)
-        private readonly users: Repository<User>
+        @InjectRepository(UserRepository)
+        private readonly userRepository: UserRepository
     ) {}
 
     async getJwtToken(userId: number) {
         const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '6h' });
-        await this.users.update({ id: userId }, { authToken: token, uuid: uuid(String(userId), uuid.URL) });
+        await this.userRepository.update({ id: userId }, { authToken: token, uuid: uuid(String(userId), uuid.URL) });
         return token;
     }
 
@@ -24,7 +23,7 @@ export class JwtService {
             if (!verifyResult['userId']) {
                 return 'INVALID';
             } else {
-                const checkResult = await this.users.count({ authToken: token, uuid: uuid(String(verifyResult['userId']), uuid.URL) });
+                const checkResult = await this.userRepository.count({ authToken: token, uuid: uuid(String(verifyResult['userId']), uuid.URL) });
                 if (checkResult > 0) {
                     return verifyResult['userId'];
                 } else {
